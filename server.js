@@ -1,0 +1,66 @@
+const express = require("express");
+const bodyParser = require("body-parser");
+const qbRoutes = require("./routes/qb");
+const products = require("./componant/products.js")
+const wishlist = require("./componant/wishlist.js")
+const contactus = require("./componant/contactus.js")
+const cart = require("./componant/cart.js")
+const login = require("./componant/login.js")
+const register = require("./componant/register.js")
+const ads = require("./componant/ads.js")
+
+const app = express();
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+
+
+
+
+//session
+const sessionStore = new MySQLStore({
+  host: 'localhost',
+  user: 'root',
+  database: 'sellstrem',
+  password: 'dalia1122002',
+  clearExpired: true,
+  checkExpirationInterval: 900000,
+  expiration: 86400000
+});
+
+app.use(session({
+  secret: 'daligjgjf',
+  resave: false,
+  saveUninitialized: true,
+  store: sessionStore
+}));
+// Middleware
+
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+// Routes
+
+app.use('/products', products)
+app.use('/wishlist', wishlist)
+app.use('/contactus', contactus)
+app.use('/cart', cart)
+app.use('/login', login)
+app.use('/register', register)
+app.use('/ads', ads)
+
+
+
+app.get('/', (req, res) => {
+  res.send('hi dalia');
+});
+
+
+
+
+
+
+const PORT = process.env.PORT || 6000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
