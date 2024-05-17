@@ -35,6 +35,7 @@ router.post('/', (req, res) => {
     });
 });
 
+
 // Remove item from cart
 router.post('/remove', (req, res) => {
     const { itemId, userId } = req.body;

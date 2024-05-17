@@ -10,104 +10,105 @@ const app = express();
 //category delet
 
 // Route for adding a new ad
+router.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ message: 'Internal server error' });
+});
 
-router.post('/', isAuthenticated, isSeller, async (req, res) => {
+//const getConnection = () => mysqlConnection.promise().getConnection();
+
+// Validation middleware
+function validateAdData(req, res, next) {
+  const { product_name, description, price, category, images } = req.body;
+  if (!product_name || !description || !price || !category || !images) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+  next();
+}
+
+// Route for adding a new ad with validation middleware
+router.post('/', validateAdData, async (req, res, next) => {
   try {
     const { product_name, description, price, category, images } = req.body;
-
-    // Validate input data
-    if (!product_name || !description || !price || !category || !images) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    // Insert the new ad into the database with status pending
-    const result = await mysqlConnection.promise().query(
+    //const connection = await getConnection();
+    const [result] = await mysqlConnection.query(
       `INSERT INTO products (product_name, description, price, category, images, seller_id, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [product_name, description, price, category, images, req.user.id, 'pending']
     );
-
-    const insertedId = result[0].insertId;
-
+    const insertedId = result.insertId;
+    connection.release();
     res.status(201).json({ message: 'Ad submitted for approval', id: insertedId });
   } catch (error) {
-    console.error('Error inserting ad:', error);
-    res.status(500).json({ message: 'Failed to insert ad' });
+    next(error);
   }
 });
 
 /*
-
 // Route for admin to approve ads
-router.put('/admin/ads/:id/approve', isAuthenticated, isAdmin, async (req, res) => {
+app.put('/admin/ads/:id/approve', isAuthenticated, isAdmin, async (req, res, next) => {
   try {
     const adId = req.params.id;
-
-    // Check if the ad exists
-    const [existingAds] = mysqlConnection.query('SELECT * FROM products WHERE id = ?', [adId]);
+    const connection = await getConnection();
+    const [existingAds] = await connection.query('SELECT * FROM products WHERE id = ?', [adId]);
     if (existingAds.length === 0) {
       return res.status(404).json({ message: 'Ad not found' });
     }
-
-    // Update ad status to approved
-    mysqlConnection.query('UPDATE products SET status = ? WHERE id = ?', ['approved', adId]);
-
+    await connection.query('UPDATE products SET status = ? WHERE id = ?', ['approved', adId]);
+    connection.release();
     res.json({ message: 'Ad approved successfully' });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 });
 
 // Route for admin to reject ads
-router.put('/admin/ads/:id/reject', isAuthenticated, isAdmin, async (req, res) => {
+router.put('/admin/ads/:id/reject', isAuthenticated, isAdmin, async (req, res, next) => {
   try {
     const adId = req.params.id;
-
-    // Check if the ad exists
-    const [existingAds] = mysqlConnection.query('SELECT * FROM products WHERE id = ?', [adId]);
+    //const connection = await getConnection();
+    const [existingAds] = await connection.query('SELECT * FROM products WHERE id = ?', [adId]);
     if (existingAds.length === 0) {
       return res.status(404).json({ message: 'Ad not found' });
     }
-
-    // Update ad status to rejected
-    mysqlConnection.query('UPDATE products SET status = ? WHERE id = ?', ['rejected', adId]);
-
+    await connection.query('UPDATE products SET status = ? WHERE id = ?', ['rejected', adId]);
+    connection.release();
     res.json({ message: 'Ad rejected successfully' });
   } catch (error) {
-
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 });
-*/
 
 app.use('/ads', router);
 
-module.exports = router;
-/*
+
 //save button
 
-app.get('/post-ad', (req, res) => {
-    res.render('postAd'); // Render the page with the form for creating ads
+router.get('/post-ad', (req, res) => {
+  res.render('postAd'); // Render the page with the form for creating ads
 });
 app.post('/post-ad', (req, res) => {
-    const { title, description, price } = req.body;
-    // Insert the ad details into the database
-    mysqlConnection.query('INSERT INTO products (title, description, price) VALUES (?, ?, ?)', [title, description, price], (err, result) => {
-        if (err) {
-            console.log('Error posting ad:', err);
-            res.status(500).json({ message: 'Error posting ad' });
-        } else {
-            console.log('Ad posted successfully');
-            res.redirect('/'); // Redirect to homepage or any other page
-        }
-    });
+  const { title, description, price } = req.body;
+  // Insert the ad details into the database
+  mysqlConnection.query('INSERT INTO products (title, description, price) VALUES (?, ?, ?)', [title, description, price], (err, result) => {
+    if (err) {
+      console.log('Error posting ad:', err);
+      res.status(500).json({ message: 'Error posting ad' });
+    } else {
+      console.log('Ad posted successfully');
+      res.redirect('/'); // Redirect to homepage or any other page
+    }
+  });
 });
-
-
-
 */
+
+module.exports = router;
+
+
+
+
+
+
 
 
 

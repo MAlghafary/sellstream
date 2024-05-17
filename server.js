@@ -8,6 +8,9 @@ const cart = require("./componant/cart.js")
 const login = require("./componant/login.js")
 const register = require("./componant/register.js")
 const ads = require("./componant/ads.js")
+const home = require("./componant/home.js")
+const checkout = require("./componant/checkout.js")
+
 
 const app = express();
 const session = require('express-session');
@@ -46,6 +49,8 @@ app.use('/cart', cart)
 app.use('/login', login)
 app.use('/register', register)
 app.use('/ads', ads)
+app.use('/home', home)
+app.use('/checkout', checkout)
 
 
 
