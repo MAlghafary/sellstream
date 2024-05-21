@@ -2,13 +2,14 @@ const express = require('express');
 const mysqlConnection = require('../utils/database.js');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 const router = express.Router();
 
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
 // View cart
-router.get('/', (req, res) => {
+router.get('/', isAuthenticated, (req, res) => {
     const sql = 'SELECT * FROM cart_items';
     mysqlConnection.query(sql, (err, result) => {
         if (err) {
@@ -20,7 +21,7 @@ router.get('/', (req, res) => {
 });
 
 // Add item to cart
-router.post('/', (req, res) => {
+router.post('/', isAuthenticated, (req, res) => {
     const { productId } = req.body;
     if (!productId) {
         return res.status(400).json({ error: 'Product ID is required' });
@@ -37,7 +38,7 @@ router.post('/', (req, res) => {
 
 
 // Remove item from cart
-router.post('/remove', (req, res) => {
+router.post('/remove', isAuthenticated, (req, res) => {
     const { itemId, userId } = req.body;
     if (!itemId || !userId) {
         return res.status(400).json({ error: 'Item ID and User ID are required' });

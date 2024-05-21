@@ -2,6 +2,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const mysqlConnection = require('../utils/database.js');
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 const router = express.Router();
 
 
@@ -11,7 +12,7 @@ app.use(bodyParser.json());
 
 
 // Route to handle contact form submission
-router.post('/', (req, res) => {
+router.post('/', isAuthenticated, (req, res) => {
     const { name, email, subject, message } = req.body;
 
     // Insert data into MySQL database

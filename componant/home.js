@@ -1,11 +1,12 @@
 const express = require('express');
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 const mysqlConnection = require('../utils/database.js');
 const router = express.Router();
 
 
 
 router.get('/', (req, res) => {
-    const productId = req.params.productId;
+    const productId = req.params;
     const sql = `
         SELECT image1_url, image2_url, image3_url, image4_url, image5_url
         FROM product_images

@@ -3,11 +3,12 @@ const express = require('express');
 const app = express();
 const mysqlConnection = require('../utils/database.js');
 const router = express.Router();
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 
 app.use(express.json());
 
 // Route to get all wishlist items
-router.get('/', (req, res) => {
+router.get('/', isAuthenticated, (req, res) => {
   mysqlConnection.query("SELECT * FROM wishlist", (error, results, fields) => {
     if (error) {
       console.error("Error fetching wishlist items:", error);
@@ -19,7 +20,7 @@ router.get('/', (req, res) => {
 });
 
 // Route to add a new wishlist item
-router.post('/', (req, res) => {
+router.post('/add', isAuthenticated, (req, res) => {
   const sqlQuery = `INSERT INTO wishlist (wish)
   SELECT product_name FROM products WHERE IsWishlistItem = 1`;
   mysqlConnection.query(sqlQuery, (error, results, fields) => {

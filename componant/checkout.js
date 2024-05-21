@@ -1,15 +1,23 @@
 const express = require('express');
 const mysqlConnection = require('../utils/database.js');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const session = require('express-session');
 const router = express.Router();
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
+
 const app = express();
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(cors());
 
-router.post('/', (req, res) => {
+// Define routes
+app.use('/api', router);
+
+router.post('/save', isAuthenticated, (req, res) => {
     const { phone, email, city, street_address, company_name, first_name, last_name } = req.body;
 
     // Validate input data (e.g., check required fields)
@@ -32,12 +40,10 @@ router.post('/', (req, res) => {
         console.log('New order created:', result);
         res.status(201).send('Order created successfully');
     });
-
-
 });
 
 // Route to move data from cart_items to order_items
-router.post('/move', (req, res) => {
+router.post('/move', isAuthenticated, (req, res) => {
     const { orderId, userId } = req.body;
 
     // Start a transaction
@@ -64,7 +70,6 @@ router.post('/move', (req, res) => {
                 return;
             }
 
-
             // Commit the transaction
             mysqlConnection.commit(err => {
                 if (err) {
@@ -82,7 +87,7 @@ router.post('/move', (req, res) => {
     });
 });
 
-router.post('/delete', (req, res) => {
+router.post('/delete', isAuthenticated, (req, res) => {
     const { userId } = req.body;
 
     // Delete items from cart_items
@@ -98,4 +103,5 @@ router.post('/delete', (req, res) => {
         res.status(200).send('Items deleted successfully');
     });
 });
+
 module.exports = router;

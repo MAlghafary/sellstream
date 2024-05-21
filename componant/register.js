@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mysqlConnection = require('../utils/database.js');
 const bcrypt = require('bcrypt');
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 
 // Function to validate email format
 function isValidEmail(email) {
@@ -35,6 +36,7 @@ router.post('/', async (req, res) => {
 
         const user = [username, email, hashedPassword, user_type];
 
+
         mysqlConnection.query('INSERT INTO users (username, email, password, user_type) VALUES (?, ?, ?, ?)', user, (err, result) => {
             if (err) {
                 console.log('Error registering user:', err);
@@ -50,3 +52,4 @@ router.post('/', async (req, res) => {
 });
 
 module.exports = router;
+

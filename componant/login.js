@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mysqlConnection = require('../utils/database.js');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 router.post('/', async (req, res) => {
     const { email, password } = req.body;
@@ -19,8 +20,10 @@ router.post('/', async (req, res) => {
 
                 if (match) {
                     console.log('Login successful');
-                    req.session.user = user;
-                    return res.status(200).json({ message: 'Login successful', user });
+                    const token = jwt.sign({ userId: user.user_id, role: user.user_type }, '%AZZ)oYObUuxw}eN!Iv&T$!|`>?4Q~', {
+                        expiresIn: '1h',
+                    });
+                    res.status(200).json({ token });
                 } else {
                     console.log('Incorrect password');
                     return res.status(401).json({ message: 'Incorrect password' });
@@ -35,14 +38,14 @@ router.post('/', async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 });
-
+/*
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
         return next();
     } else {
         return res.status(401).json({ message: 'Unauthorized' });
     }
-}
+}*/
 
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -1,87 +1,47 @@
 const mysqlConnection = require('../utils/database.js');
-const isAuthenticated = require('../middlewares/isAuthenticated');
-const isAdmin = require('../middlewares/isAdmin');
 const isSeller = require('../middlewares/isSeller');
 const express = require('express');
 const isBuyer = require('../middlewares/isBuyer');
 const router = express.Router();
-
+const isAuthenticated = require('../middlewares/isAuthenticated.js');
 const app = express();
-//category delet
 
-// Route for adding a new ad
-router.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ message: 'Internal server error' });
-});
-
-//const getConnection = () => mysqlConnection.promise().getConnection();
 
 // Validation middleware
 function validateAdData(req, res, next) {
-  const { product_name, description, price, category, images } = req.body;
-  if (!product_name || !description || !price || !category || !images) {
+  const { product_name, description, price, contact, images } = req.body;
+  if (!product_name || !description || !price || !contact || !images) {
     return res.status(400).json({ message: 'All fields are required' });
   }
   next();
 }
-
 // Route for adding a new ad with validation middleware
-router.post('/', validateAdData, async (req, res, next) => {
-  try {
-    const { product_name, description, price, category, images } = req.body;
-    //const connection = await getConnection();
-    const [result] = await mysqlConnection.query(
-      `INSERT INTO products (product_name, description, price, category, images, seller_id, status) 
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [product_name, description, price, category, images, req.user.id, 'pending']
-    );
-    const insertedId = result.insertId;
-    connection.release();
-    res.status(201).json({ message: 'Ad submitted for approval', id: insertedId });
-  } catch (error) {
-    next(error);
+router.post('/', validateAdData, isAuthenticated, async (req, res, next) => {
+  const user_role = req.user.role;
+  console.log(req.user);
+  if (user_role == 'seller') {
+    console.log("User authenticated and is a seller");
+    const { product_name, description, price, contact, images, seller_id } = req.body;
+
+    const sql = `
+      INSERT INTO products (product_name, description, price, contact, images, seller_id, approval_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [product_name, description, price, contact, images, seller_id, 'pending'];
+
+    mysqlConnection.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error inserting product:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      res.json(result);
+    });
+  } else {
+    return res.status(401).json({ message: 'Unauthorized: you are not a seller' });
   }
 });
 
 /*
-// Route for admin to approve ads
-app.put('/admin/ads/:id/approve', isAuthenticated, isAdmin, async (req, res, next) => {
-  try {
-    const adId = req.params.id;
-    const connection = await getConnection();
-    const [existingAds] = await connection.query('SELECT * FROM products WHERE id = ?', [adId]);
-    if (existingAds.length === 0) {
-      return res.status(404).json({ message: 'Ad not found' });
-    }
-    await connection.query('UPDATE products SET status = ? WHERE id = ?', ['approved', adId]);
-    connection.release();
-    res.json({ message: 'Ad approved successfully' });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Route for admin to reject ads
-router.put('/admin/ads/:id/reject', isAuthenticated, isAdmin, async (req, res, next) => {
-  try {
-    const adId = req.params.id;
-    //const connection = await getConnection();
-    const [existingAds] = await connection.query('SELECT * FROM products WHERE id = ?', [adId]);
-    if (existingAds.length === 0) {
-      return res.status(404).json({ message: 'Ad not found' });
-    }
-    await connection.query('UPDATE products SET status = ? WHERE id = ?', ['rejected', adId]);
-    connection.release();
-    res.json({ message: 'Ad rejected successfully' });
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.use('/ads', router);
-
-
 //save button
 
 router.get('/post-ad', (req, res) => {

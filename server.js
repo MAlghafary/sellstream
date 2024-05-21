@@ -10,12 +10,13 @@ const register = require("./componant/register.js")
 const ads = require("./componant/ads.js")
 const home = require("./componant/home.js")
 const checkout = require("./componant/checkout.js")
+const dashboard = require("./componant/dashboard.js")
+
 
 
 const app = express();
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
-
 
 
 
@@ -40,6 +41,8 @@ app.use(session({
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+
 // Routes
 
 app.use('/products', products)
@@ -51,7 +54,7 @@ app.use('/register', register)
 app.use('/ads', ads)
 app.use('/home', home)
 app.use('/checkout', checkout)
-
+app.use('/dashboard', dashboard)
 
 
 app.get('/', (req, res) => {
