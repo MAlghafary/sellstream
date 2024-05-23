@@ -3,11 +3,11 @@ const mysql = require("mysql2");
 const mysqlConnection = mysql.createConnection({
   host: "localhost",
   user: "root",
-  database: "sellstrem",
-  password: "dalia1122002",
+  database: "sell",
+  password: "",
   multipleStatements: true,
   authPlugins: {
-    mysql_clear_password: () => () => Buffer.from("dalia1122002")
+    mysql_clear_password: () => () => Buffer.from("")
   }
 });
 

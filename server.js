@@ -11,6 +11,7 @@ const ads = require("./componant/ads.js")
 const home = require("./componant/home.js")
 const checkout = require("./componant/checkout.js")
 const dashboard = require("./componant/dashboard.js")
+const cors = require('cors');
 
 
 
@@ -24,8 +25,8 @@ const MySQLStore = require('express-mysql-session')(session);
 const sessionStore = new MySQLStore({
   host: 'localhost',
   user: 'root',
-  database: 'sellstrem',
-  password: 'dalia1122002',
+  database: 'sell',
+  password: '',
   clearExpired: true,
   checkExpirationInterval: 900000,
   expiration: 86400000
@@ -39,6 +40,7 @@ app.use(session({
 }));
 // Middleware
 
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.urlencoded({ extended: true }));
@@ -49,8 +51,8 @@ app.use('/products', products)
 app.use('/wishlist', wishlist)
 app.use('/contactus', contactus)
 app.use('/cart', cart)
-app.use('/login', login)
-app.use('/register', register)
+app.use('/login', login) // Done 
+app.use('/register', register) // Done 
 app.use('/ads', ads)
 app.use('/home', home)
 app.use('/checkout', checkout)
@@ -66,7 +68,7 @@ app.get('/', (req, res) => {
 
 
 
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 6001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

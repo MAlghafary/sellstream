@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 
 router.post('/', async (req, res) => {
     const { email, password } = req.body;
+    console.log(email)
+    console.log(password)
 
     try {
         mysqlConnection.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
@@ -26,26 +28,19 @@ router.post('/', async (req, res) => {
                     res.status(200).json({ token });
                 } else {
                     console.log('Incorrect password');
-                    return res.status(401).json({ message: 'Incorrect password' });
+                    return res.status(401).json({ error: 'Incorrect password' });
                 }
             } else {
                 console.log('User not found. Please register.');
-                return res.status(404).json({ message: 'User not found. Please register.' });
+                return res.status(404).json({ error: 'User not found. Please register.' });
             }
         });
     } catch (error) {
         console.error('Error during login:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-/*
-function isAuthenticated(req, res, next) {
-    if (req.session.user) {
-        return next();
-    } else {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
-}*/
+
 
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
