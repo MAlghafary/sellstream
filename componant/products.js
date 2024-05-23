@@ -4,11 +4,8 @@ const isAuthenticated = require("../middlewares/isAuthenticated.js");
 const mysqlConnection = require("../utils/database.js");
 const Product = require("../models/Product")
 
-// Route to get all products
 router.get("/", isAuthenticated, (req, res) => {
   Product.fetchAll((err, products) => {
-    console.log(err)
-    console.log(products)
     if (err) {
       return res.status(500).json({ error: "Failed to fetch products" });
     }
@@ -16,21 +13,21 @@ router.get("/", isAuthenticated, (req, res) => {
   });
 });
 
+router.post('/', isAuthenticated , (req, res) => {
+  const productData = req.body;
+  console.log(productData)
+  if (!productData || !productData.name || !productData.price || !productData.image) {
+    return res.status(400).send({ error: 'Product data is incomplete' });
+  }
 
-router.post("/", isAuthenticated, (req, res) => {
-  const { product_name, description, price, image_url } = req.body;
-  const sql =
-    "INSERT INTO products (product_name, description, price, image_url) VALUES (?, ?, ?, ?)";
-  mysqlConnection.query(
-    sql,
-    [product_name, description, price, image_url],
-    (err, result) => {
-      if (err) {
-        throw err;
-      }
-      res.send("Product added successfully");
+  const product = Product.fromData(productData)
+
+  product.save((err, savedProduct) => {
+    if (err) {
+      return res.status(500).send({ error: 'Failed to save product' });
     }
-  );
+    res.status(201).send({message:"product saved" , data : product});
+  });
 });
 
 module.exports = router;
