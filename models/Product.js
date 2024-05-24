@@ -5,13 +5,12 @@ class Product {
     id,
     name,
     category,
+    categoryId,
     discount,
-    fullDescription,
-    shortDescription,
+    description,
     price,
     rating,
     saleCount,
-    sku,
     offerEnd,
     isNew,
     stock,
@@ -20,13 +19,12 @@ class Product {
     this.id = id;
     this.name = name;
     this.category = category;
+    this.categoryId = categoryId;
     this.discount = discount;
-    this.fullDescription = fullDescription;
-    this.shortDescription = shortDescription;
+    this.description = description;
     this.price = price;
     this.rating = rating;
     this.saleCount = saleCount;
-    this.sku = sku;
     this.offerEnd = offerEnd;
     this.isNew = isNew;
     this.stock = stock;
@@ -37,14 +35,13 @@ class Product {
     return new Product(
       data.id || null,
       data.name,
-      data.category || [],
+      data.category || "",
+      data.categoryId || 0,
       data.discount || 0,
-      data.fullDescription || "",
-      data.shortDescription || "",
+      data.description || "",
       data.price,
       data.rating || 0,
       data.saleCount || 0,
-      data.sku || "",
       data.offerEnd || null,
       data.isNew || true,
       data.stock,
@@ -57,24 +54,20 @@ class Product {
       SELECT 
         p.id, 
         p.name, 
-        p.sku, 
         p.price, 
         p.discount, 
-        p.fullDescription, 
-        p.shortDescription, 
+        p.description, 
         p.rating, 
         p.saleCount, 
         p.isNew, 
         p.offerEnd, 
         p.stock,
-        GROUP_CONCAT(DISTINCT c.name) AS categories,
+        c.name AS categories,
         GROUP_CONCAT(DISTINCT i.url) AS images
       FROM 
         product p
       LEFT JOIN 
-        product_category pc ON p.id = pc.product_id
-      LEFT JOIN 
-        category c ON pc.category_id = c.id
+        category c ON p.category_id = c.id
       LEFT JOIN 
         image i ON p.id = i.product_id
       GROUP BY 
@@ -88,24 +81,21 @@ class Product {
       SELECT 
         p.id, 
         p.name, 
-        p.sku, 
         p.price, 
         p.discount, 
-        p.fullDescription, 
-        p.shortDescription, 
+        p.description, 
         p.rating, 
         p.saleCount, 
         p.isNew, 
         p.offerEnd, 
         p.stock,
-        GROUP_CONCAT(DISTINCT c.name) AS categories,
+        c.name AS category,
+        c.id AS categoryId,
         GROUP_CONCAT(DISTINCT i.url) AS images
       FROM 
         product p
       LEFT JOIN 
-        product_category pc ON p.id = pc.product_id
-      LEFT JOIN 
-        category c ON pc.category_id = c.id
+        category c ON p.category_id = c.id
       LEFT JOIN 
         image i ON p.id = i.product_id
       WHERE p.approval_status = 'pending'  
@@ -128,14 +118,13 @@ class Product {
         new Product(
           row.id,
           row.name,
-          row.categories ? row.categories.split(",") : [],
+          row.category,
+          row.categoryId,
           row.discount,
-          row.fullDescription,
-          row.shortDescription,
+          row.description,
           row.price,
           Number(row.rating), 
           row.saleCount,
-          row.sku,
           row.offerEnd,
           row.isNew,
           row.stock,
@@ -152,29 +141,27 @@ class Product {
       INSERT INTO product (
         name,
         discount,
-        fullDescription,
-        shortDescription,
+        description,
         price,
         rating,
         saleCount,
-        sku,
         offerEnd,
         isNew,
-        stock
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        stock,
+        category_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)
     `;
     const values = [
       this.name,
       this.discount,
-      this.fullDescription,
-      this.shortDescription,
+      this.description,
       this.price,
       this.rating,
       this.saleCount,
-      this.sku,
       this.offerEnd,
       this.isNew,
-      this.stock
+      this.stock,
+      this.categoryId
     ];
 
     mysqlConnection.query(query, values, (err, result) => {

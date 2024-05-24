@@ -13,7 +13,7 @@ router.get("/", isAuthenticated, (req, res) => {
   });
 });
 
-router.post('/', isAuthenticated , (req, res) => {
+router.post('/', isAuthenticated , (req, res) => {    
   const productData = req.body;
   console.log(productData)
   if (!productData || !productData.name || !productData.price || !productData.image) {
