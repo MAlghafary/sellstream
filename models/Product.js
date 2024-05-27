@@ -62,7 +62,8 @@ class Product {
         p.isNew, 
         p.offerEnd, 
         p.stock,
-        c.name AS categories,
+        c.name AS category,
+        c.id AS categoryId,
         GROUP_CONCAT(DISTINCT i.url) AS images
       FROM 
         product p
